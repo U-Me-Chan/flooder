@@ -3,5 +3,4 @@
 dist
 node_modules
 corpus.txt
-yarn.lock
 yarn-error.log
