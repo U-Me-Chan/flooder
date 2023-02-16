@@ -186,7 +186,7 @@ export class CrawlerLibRu implements AbstractCrawler {
       const text = LibRuGetBookText(dom);
 
       await this.storage.addFetched(id);
-      await writeFile(`${RESERV_PATH}/${Date.now()}.txt`, text);
+      await writeFile(`${RESERV_PATH}/${id}.txt`, text);
 
       return {
         text,
