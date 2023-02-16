@@ -4,6 +4,7 @@ import { Corpus } from './Corpus';
 import { Storage } from './Storage';
 
 export class Fetcher {
+  disabledCrawlers: string[] = [];
   crawlers: AbstractCrawler[] = [];
 
   constructor(private storage: Storage, private corpus: Corpus) {
@@ -22,15 +23,18 @@ export class Fetcher {
   }
 
   async run() {
-    for (let crawler of this.crawlers) {
-      const { text, nextAvailable } = await crawler.getNext();
+    const enabledCrawlers = this.crawlers.filter(_ => !this.disabledCrawlers.includes(_.name));
+    for (let crawler of enabledCrawlers) {
+      const { text, nextAvailable, id } = await crawler.getNext();
 
-      if (text !== '') {
+      if (text !== '' && id !== undefined) {
+        console.log(`Crawler "${crawler.name}" returned corpus with #${id}`);
         this.corpus.push(text);
       }
 
       if (!nextAvailable) {
         console.log(`Crawler "${crawler.name}" reported: next text chunk not available`);
+        this.disabledCrawlers.push(crawler.name);
       }
     }
   }

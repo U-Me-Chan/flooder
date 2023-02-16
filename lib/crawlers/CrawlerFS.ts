@@ -1,8 +1,11 @@
 import { AbstractCrawler } from './AbstractCrawler';
 import { Storage } from '../Storage';
+import { readFile, readdir} from 'fs/promises';
+import { createHash } from 'crypto';
 import path from 'path';
 
 export class CrawlerFS implements AbstractCrawler {
+  filePaths: string[] = [];
   storage: Storage;
   name = 'fs';
 
@@ -10,19 +13,37 @@ export class CrawlerFS implements AbstractCrawler {
     this.storage = storage;
   }
 
-  init(): Promise<void> {
+  async init(): Promise<void> {
     const rawCorpusPath = path.join(__dirname, '../../../corpus');
+    const fileNames = await readdir(rawCorpusPath);
 
-    console.log(__dirname, rawCorpusPath);
-    return Promise.resolve();
+    for (const fileName of fileNames) {
+      const filePath = path.join(rawCorpusPath, fileName);
+      this.filePaths.push(filePath);
+    }
   }
 
-  async getNext(): Promise<{ text: string; nextAvailable: boolean }> {
-    await this.storage.addFetched(`${this.name}_test`);
+  async getNext(): Promise<{ text: string; id?: string, nextAvailable: boolean }> {
+    if (!this.filePaths.length) {
+      return {
+        text: '',
+        id: undefined,
+        nextAvailable: false,
+      };
+    }
 
-    return Promise.resolve({
-      text: 'lib.ru',
-      nextAvailable: false,
-    });
+    const filePath = this.filePaths.pop() || '';
+    const id = createHash('sha256').update(filePath).digest('hex');
+
+    const rawCorpusBuffer = await readFile(filePath);
+    const rawCorpus = rawCorpusBuffer.toString('utf-8');
+
+    await this.storage.addFetched(`${this.name}_${filePath}_${id}`);
+
+    return {
+      text: rawCorpus,
+      id: `${this.name}_${filePath}_${id}`,
+      nextAvailable: this.filePaths.length > 0,
+    };
   }
 }

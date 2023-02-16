@@ -2,5 +2,5 @@
 .idea
 dist
 node_modules
-corpus.txt
+corpus/bullshit.txt
 yarn-error.log

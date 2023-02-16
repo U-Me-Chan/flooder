@@ -14,6 +14,7 @@ export class Corpus {
   }
 
   push(text: string) {
+    console.log('Adding new corpus to model');
     this.markov.addData(this.refactor.clean(text));
   }
 

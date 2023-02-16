@@ -4,5 +4,5 @@ export interface AbstractCrawler {
   storage: Storage;
   name: string;
   init(): Promise<void>;
-  getNext(): Promise<{ text: string; nextAvailable: boolean }>
+  getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }>
 }
