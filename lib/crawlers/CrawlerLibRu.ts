@@ -91,16 +91,20 @@ export class CrawlerLibRu implements AbstractCrawler {
       this.authorsUrls = authorsUrls;
     } catch {
       for (let catUrl of CATEGORY_URLS) {
-        const links = (await this.getAuthorsUrlsByCategory(catUrl))
-          .filter(link => {
-            if (link.includes('.txt') && !link.includes('.txt_Contents')) {
-              this.booksUrls.push(link);
-              return false;
-            }
+        try {
+          const links = (await this.getAuthorsUrlsByCategory(catUrl))
+            .filter(link => {
+              if (link.includes('.txt') && !link.includes('.txt_Contents')) {
+                this.booksUrls.push(link);
+                return false;
+              }
 
-            return true;
-          });
-        this.authorsUrls = [...this.authorsUrls, ...links];
+              return true;
+            });
+          this.authorsUrls = [...this.authorsUrls, ...links];
+        } catch {
+          // skip
+        }
         await sleep(100);
       }
 
@@ -108,8 +112,12 @@ export class CrawlerLibRu implements AbstractCrawler {
       for (const authorUrl of this.authorsUrls) {
         console.log(`Crawler [${this.name}]: Processing link ${this.authorsUrls.findIndex((_) => _ === authorUrl) + 1} of ${this.authorsUrls.length}`);
 
-        const links = await this.getBooksUrlsByAuthor(authorUrl);
-        this.booksUrls = [...this.booksUrls, ...links];
+        try {
+          const links = await this.getBooksUrlsByAuthor(authorUrl);
+          this.booksUrls = [...this.booksUrls, ...links];
+        } catch {
+          // skip
+        }
       }
 
       this.booksUrls = [...new Set(this.booksUrls)];
