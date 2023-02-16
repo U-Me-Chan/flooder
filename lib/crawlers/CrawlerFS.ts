@@ -4,6 +4,8 @@ import { readFile, readdir} from 'fs/promises';
 import { createHash } from 'crypto';
 import path from 'path';
 
+const CORPUS_PATH = 'corpus/';
+
 export class CrawlerFS implements AbstractCrawler {
   storage: Storage;
   name = 'fs';
@@ -16,11 +18,10 @@ export class CrawlerFS implements AbstractCrawler {
   }
 
   async init(): Promise<void> {
-    const rawCorpusPath = path.join(__dirname, '../../../corpus');
-    const fileNames = await readdir(rawCorpusPath);
+    const fileNames = await readdir(CORPUS_PATH);
 
     for (const fileName of fileNames) {
-      const filePath = path.join(rawCorpusPath, fileName);
+      const filePath = path.join(CORPUS_PATH, fileName);
       this.filePaths.push(filePath);
     }
   }

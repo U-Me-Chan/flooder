@@ -5,6 +5,7 @@ import { writeFile, readFile } from 'fs/promises';
 const MARKOV_STRINGS_STATE_SIZE = 2;
 const MARKOV_STRINGS_MAX_TRIES = 100000;
 const MIN_REFERENCES_COUNT = 5;
+const MODEL_FILEPATH = 'storage/model.json';
 
 export class Corpus {
   private refactor: TextRefactor;
@@ -17,12 +18,12 @@ export class Corpus {
 
   public async saveModel() {
     const model = this.markov.export();
-    await writeFile('storage/model.json', JSON.stringify(model));
+    await writeFile(MODEL_FILEPATH, JSON.stringify(model));
   }
 
   public async loadModel() {
     const model = JSON.parse(
-      (await readFile('storage/model.json')).toString()
+      (await readFile(MODEL_FILEPATH)).toString()
     );
 
     this.markov.import(model);
