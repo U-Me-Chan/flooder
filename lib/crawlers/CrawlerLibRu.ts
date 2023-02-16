@@ -5,11 +5,12 @@ import axios from 'axios';
 import { LibRuGetBookText, LibRuGetDOM, LibRuGetLinksInDOM } from '../utils/libRuParserHelpers';
 import { sleep } from '../utils/sleep';
 import { createHash } from 'crypto';
-import { writeFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 
 axiosRetry(axios, { retries: 100 });
 
 const RESERV_PATH = 'corpus-reserv/';
+const CACHED_URLS_PATH = 'storage/crawler_lib_ru_urls.json';
 
 // Ссылки из общей навигации и прочее
 const BLACKLIST_URLS = [
@@ -84,34 +85,40 @@ export class CrawlerLibRu implements AbstractCrawler {
   async init(): Promise<void> {
     console.log(`Crawler [${this.name}]: Start creating authors list`);
 
-    for (let catUrl of CATEGORY_URLS) {
-      const links = (await this.getAuthorsUrlsByCategory(catUrl))
-        .filter(link => {
-          if (link.includes('.txt') && !link.includes('.txt_Contents')) {
-            this.booksUrls.push(link);
-            return false;
-          }
+    try {
+      const { booksUrls, authorsUrls } = JSON.parse((await readFile(CACHED_URLS_PATH)).toString());
+      this.booksUrls = booksUrls;
+      this.authorsUrls = authorsUrls;
+    } catch {
+      for (let catUrl of CATEGORY_URLS) {
+        const links = (await this.getAuthorsUrlsByCategory(catUrl))
+          .filter(link => {
+            if (link.includes('.txt') && !link.includes('.txt_Contents')) {
+              this.booksUrls.push(link);
+              return false;
+            }
 
-          return true;
-        });
-      this.authorsUrls = [...this.authorsUrls, ...links];
-      await sleep(100);
+            return true;
+          });
+        this.authorsUrls = [...this.authorsUrls, ...links];
+        await sleep(100);
+      }
+
+      this.authorsUrls = [...new Set(this.authorsUrls)];
+      for (const authorUrl of this.authorsUrls) {
+        console.log(`Crawler [${this.name}]: Processing link ${this.authorsUrls.findIndex((_) => _ === authorUrl) + 1} of ${this.authorsUrls.length}`);
+
+        const links = await this.getBooksUrlsByAuthor(authorUrl);
+        this.booksUrls = [...this.booksUrls, ...links];
+      }
+
+      this.booksUrls = [...new Set(this.booksUrls)];
+
+      await writeFile(CACHED_URLS_PATH, JSON.stringify({ booksUrls: this.booksUrls, authorsUrls: this.authorsUrls }));
     }
-
-    this.authorsUrls = [...new Set(this.authorsUrls)];
-    for (const authorUrl of this.authorsUrls) {
-      console.log(`Crawler [${this.name}]: Processing link ${this.authorsUrls.findIndex((_) => _ === authorUrl) + 1} of ${this.authorsUrls.length}`);
-
-      const links = await this.getBooksUrlsByAuthor(authorUrl);
-      this.booksUrls = [...this.booksUrls, ...links];
-    }
-
-    this.booksUrls = [...new Set(this.booksUrls)];
 
     console.log(`Crawler [${this.name}]: Authors links found: ${this.authorsUrls.length}`);
     console.log(`Crawler [${this.name}]: Books links found: ${this.booksUrls.length}`);
-
-
 
     this.ready = true;
   }
