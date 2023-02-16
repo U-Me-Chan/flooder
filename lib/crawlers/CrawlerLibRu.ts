@@ -5,8 +5,11 @@ import axios from 'axios';
 import { LibRuGetBookText, LibRuGetDOM, LibRuGetLinksInDOM } from '../utils/libRuParserHelpers';
 import { sleep } from '../utils/sleep';
 import { createHash } from 'crypto';
+import { writeFile } from 'fs/promises';
 
 axiosRetry(axios, { retries: 100 });
+
+const RESERV_PATH = 'corpus-reserv/';
 
 // Ссылки из общей навигации и прочее
 const BLACKLIST_URLS = [
@@ -176,6 +179,7 @@ export class CrawlerLibRu implements AbstractCrawler {
       const text = LibRuGetBookText(dom);
 
       await this.storage.addFetched(id);
+      await writeFile(`${RESERV_PATH}/${Date.now()}.txt`, text);
 
       return {
         text,

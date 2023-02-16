@@ -5,6 +5,7 @@ import { createHash } from 'crypto';
 import path from 'path';
 
 const CORPUS_PATH = 'corpus/';
+const RESERV_CORPUS_PATH = 'corpus-reserv/';
 
 export class CrawlerFS implements AbstractCrawler {
   storage: Storage;
@@ -20,9 +21,15 @@ export class CrawlerFS implements AbstractCrawler {
 
   async init(): Promise<void> {
     const fileNames = await readdir(CORPUS_PATH);
+    const reservFileName = await readdir(RESERV_CORPUS_PATH);
 
     for (const fileName of fileNames) {
       const filePath = path.join(CORPUS_PATH, fileName);
+      this.filePaths.push(filePath);
+    }
+
+    for (const fileName of reservFileName) {
+      const filePath = path.join(RESERV_CORPUS_PATH, fileName);
       this.filePaths.push(filePath);
     }
 
