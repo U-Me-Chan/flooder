@@ -5,7 +5,7 @@ import { CrawlerFS } from './CrawlerFS';
 
 export const AbstractCrawlerFabric = (storage: Storage): AbstractCrawler[] => {
   return [
-    new CrawlerLibRu(storage),
     new CrawlerFS(storage),
+    new CrawlerLibRu(storage),
   ];
 }

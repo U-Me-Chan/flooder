@@ -13,13 +13,13 @@ export class Fetcher {
   }
 
   async init() {
-    for (let crawler of this.crawlers) {
+    await Promise.all(this.crawlers.map(async (crawler) => {
       try {
         await crawler.init();
       } catch (e) {
         console.log(`Crawler [${crawler.name}]: Failed init: ${e}`)
       }
-    }
+    }));
   }
 
   async run() {
