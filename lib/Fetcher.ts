@@ -44,6 +44,6 @@ export class Fetcher {
     });
 
     await Promise.all(promises);
-    setTimeout(() => this.run(), 0);
+    setTimeout(() => this.run(), 250);
   }
 }
