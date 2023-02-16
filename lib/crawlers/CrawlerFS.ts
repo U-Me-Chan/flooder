@@ -9,6 +9,7 @@ const CORPUS_PATH = 'corpus/';
 export class CrawlerFS implements AbstractCrawler {
   storage: Storage;
   name = 'fs';
+  ready = true;
   breakTime = 100;
 
   private filePaths: string[] = [];

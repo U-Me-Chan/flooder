@@ -14,12 +14,19 @@ export class Fetcher {
 
   async init() {
     for (let crawler of this.crawlers) {
-      await crawler.init();
+      try {
+        await crawler.init();
+      } catch (e) {
+        console.log(`Failed init crawler ${crawler.name}: ${e}`)
+      }
     }
   }
 
   async run() {
-    const enabledCrawlers = this.crawlers.filter(_ => !this.disabledCrawlers.includes(_.name));
+    const enabledCrawlers = this.crawlers
+      .filter(_ => !this.disabledCrawlers.includes(_.name))
+      .filter(_ => _.ready);
+
     const promises = enabledCrawlers.map(async (crawler) => {
       const { text, nextAvailable, id } = await crawler.getNext();
 

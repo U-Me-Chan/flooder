@@ -10,6 +10,8 @@ export interface AbstractCrawler {
 
   name: string;
 
+  ready: boolean;
+
   init(): Promise<void>;
 
   getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }>

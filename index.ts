@@ -9,14 +9,15 @@ const main = async () => {
   const storage = new Storage();
   const corpus = new Corpus();
   const fetcher = new Fetcher(storage, corpus);
-  await fetcher.init();
 
   app
     .get('/', (req, res) => {
       res.json(corpus.generate());
     })
     .get('/crawler/run', (req, res) => {
+      fetcher.init();
       fetcher.run();
+
       res.json('crawlers start working');
     })
     .get('/model/save', (req, res) => {
