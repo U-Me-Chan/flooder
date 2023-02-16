@@ -17,7 +17,7 @@ export class Fetcher {
       try {
         await crawler.init();
       } catch (e) {
-        console.log(`Failed init crawler ${crawler.name}: ${e}`)
+        console.log(`Crawler [${crawler.name}]: Failed init: ${e}`)
       }
     }
   }
@@ -31,12 +31,12 @@ export class Fetcher {
       const { text, nextAvailable, id } = await crawler.getNext();
 
       if (text !== '' && id !== undefined) {
-        console.log(`Crawler "${crawler.name}" returned corpus with #${id}`);
+        console.log(`Crawler [${crawler.name}]: returned corpus with #${id}`);
         this.corpus.push(text);
       }
 
       if (!nextAvailable) {
-        console.log(`Crawler "${crawler.name}" reported: next text chunk not available`);
+        console.log(`Crawler [${crawler.name}]: next text chunk not available`);
         this.disabledCrawlers.push(crawler.name);
       }
 

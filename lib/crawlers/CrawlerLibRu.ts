@@ -79,12 +79,12 @@ export class CrawlerLibRu implements AbstractCrawler {
   }
 
   async init(): Promise<void> {
-    console.log('Crawler [lib.ru]: Start creating authors list');
+    console.log(`Crawler [${this.name}]: Start creating authors list`);
 
     for (let catUrl of CATEGORY_URLS) {
       const links = (await this.getAuthorsUrlsByCategory(catUrl))
         .filter(link => {
-          if (link.endsWith('.txt')) {
+          if (link.includes('.txt') && !link.includes('.txt_Contents')) {
             this.booksUrls.push(link);
             return false;
           }
@@ -97,7 +97,7 @@ export class CrawlerLibRu implements AbstractCrawler {
 
     this.authorsUrls = [...new Set(this.authorsUrls)];
     for (const authorUrl of this.authorsUrls) {
-      console.log(`Crawler [lib.ru]: Processing link ${this.authorsUrls.findIndex((_) => _ === authorUrl) + 1} of ${this.authorsUrls.length}`);
+      console.log(`Crawler [${this.name}]: Processing link ${this.authorsUrls.findIndex((_) => _ === authorUrl) + 1} of ${this.authorsUrls.length}`);
 
       const links = await this.getBooksUrlsByAuthor(authorUrl);
       this.booksUrls = [...this.booksUrls, ...links];
@@ -105,13 +105,16 @@ export class CrawlerLibRu implements AbstractCrawler {
 
     this.booksUrls = [...new Set(this.booksUrls)];
 
-    console.log(this.booksUrls);
+    console.log(`Crawler [${this.name}]: Authors links found: ${this.authorsUrls.length}`);
+    console.log(`Crawler [${this.name}]: Books links found: ${this.booksUrls.length}`);
 
-    console.log(`Crawler [lib.ru]: Authors links found: ${this.authorsUrls.length}`);
+
+
+    this.ready = true;
   }
 
   private async getBooksUrlsByAuthor(authorUrl: string): Promise<string[]> {
-    console.log(`Crawler [lib.ru]: Getting books list for ${authorUrl.replace('http://lib.ru/', '')}`);
+    console.log(`Crawler [${this.name}]: Getting books list for ${authorUrl.replace('http://lib.ru/', '')}`);
 
     const raw = await axios.get<string>(authorUrl, {
       responseType: 'arraybuffer',
@@ -119,15 +122,16 @@ export class CrawlerLibRu implements AbstractCrawler {
     });
     const dom = LibRuGetDOM(raw.data);
     const booksList = LibRuGetLinksInDOM(dom)
-      .map(link => link.endsWith('.txt') ? link : '')
-      .filter(link => link !== '');
+      .map(link => link.includes('.txt') ? link : '')
+      .filter(link => link !== '')
+      .map((link) => `${authorUrl}${link}`);
 
-    console.log(`Crawler [lib.ru]: found ${booksList.length} links for ${authorUrl}`);
+    console.log(`Crawler [${this.name}]: found ${booksList.length} links for ${authorUrl}`);
     return booksList;
   }
 
   private async getAuthorsUrlsByCategory(categoryUrl: string): Promise<string[]> {
-    console.log(`Crawler [lib.ru]: Getting authors list for ${categoryUrl.replace('http://lib.ru/', '')}`);
+    console.log(`Crawler [${this.name}]: Getting authors list for ${categoryUrl.replace('http://lib.ru/', '')}`);
 
     const raw = await axios.get<string>(categoryUrl, {
       responseType: 'arraybuffer',
@@ -140,11 +144,12 @@ export class CrawlerLibRu implements AbstractCrawler {
       .map(link => link.startsWith('koi/') ? '' : link)
       .map(link => link.startsWith('win/') ? '' : link)
       .map(link => link.startsWith('lat/') ? '' : link)
+      .map(link => link.includes('.txt_Contents') ? '' : link)
       .map(link => BLACKLIST_URLS.includes(link) ? '' : link)
       .filter(link => link !== '')
       .map((link) => `${categoryUrl}${link}`);
 
-    console.log(`Crawler [lib.ru]: found ${authorsLinks.length} links for ${categoryUrl}`);
+    console.log(`Crawler [${this.name}]: found ${authorsLinks.length} links for ${categoryUrl}`);
     return authorsLinks;
   }
 
@@ -160,21 +165,29 @@ export class CrawlerLibRu implements AbstractCrawler {
       };
     }
 
-    console.log(`Crawler [lib.ru]: Getting book ${link} (books in queue: ${this.booksUrls.length})`);
+    try {
+      console.log(`Crawler [${this.name}]: Getting book ${link} (books in queue: ${this.booksUrls.length})`);
 
-    const { data } = await axios.get(link, {
-      responseType: 'arraybuffer',
-      responseEncoding: 'binary',
-    });
-    const dom = LibRuGetDOM(data);
-    const text = LibRuGetBookText(dom);
+      const { data } = await axios.get(link, {
+        responseType: 'arraybuffer',
+        responseEncoding: 'binary',
+      });
+      const dom = LibRuGetDOM(data);
+      const text = LibRuGetBookText(dom);
 
-    await this.storage.addFetched(id);
+      await this.storage.addFetched(id);
 
-    return Promise.resolve({
-      text,
-      id,
-      nextAvailable: this.booksUrls.length > 0,
-    });
+      return {
+        text,
+        id,
+        nextAvailable: this.booksUrls.length > 0,
+      };
+    } catch (e) {
+      return {
+        text: '',
+        id,
+        nextAvailable: this.booksUrls.length > 0,
+      };
+    }
   }
 }

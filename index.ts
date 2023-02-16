@@ -31,7 +31,7 @@ const main = async () => {
         .then(() => res.json('loaded'))
         .catch((err) => res.status(500).json(err));
     })
-    .listen(3030, () => console.log('app started'));
+    .listen(3030, () => console.log('App: started'));
 };
 
 main().catch(() => null);

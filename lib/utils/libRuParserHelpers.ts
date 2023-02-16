@@ -22,9 +22,5 @@ export const LibRuGetLinksInDOM = (dom: Document) => {
 
 export const LibRuGetBookText = (dom: Document) => {
   const body = getElementsByTagName('body', dom);
-  const firstPre = getElementsByTagName('pre', body);
-
-  console.log(firstPre)
-
-  return textContent(firstPre);
+  return textContent(body);
 }
