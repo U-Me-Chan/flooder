@@ -1,28 +1,43 @@
 import Markov from 'markov-strings';
 import { TextRefactor } from './TextRefactor';
+import { writeFile, readFile } from 'fs/promises';
 
 const MARKOV_STRINGS_STATE_SIZE = 2;
 const MARKOV_STRINGS_MAX_TRIES = 100000;
+const MIN_REFERENCES_COUNT = 5;
 
 export class Corpus {
-  refactor: TextRefactor;
-  markov: Markov;
+  private refactor: TextRefactor;
+  private markov: Markov;
 
   constructor() {
     this.refactor = new TextRefactor();
     this.markov = new Markov({ stateSize: MARKOV_STRINGS_STATE_SIZE });
   }
 
-  push(text: string) {
+  public async saveModel() {
+    const model = this.markov.export();
+    await writeFile('storage/model.json', JSON.stringify(model));
+  }
+
+  public async loadModel() {
+    const model = JSON.parse(
+      (await readFile('storage/model.json')).toString()
+    );
+
+    this.markov.import(model);
+  }
+
+  public push(text: string) {
     console.log('Adding new corpus to model');
     this.markov.addData(this.refactor.clean(text));
   }
 
-  generate() {
+  public generate() {
     const generated = this.markov.generate({
       maxTries: MARKOV_STRINGS_MAX_TRIES,
       filter: (result) => {
-        return result.refs.length > 5;
+        return result.refs.length > MIN_REFERENCES_COUNT;
       },
     });
 

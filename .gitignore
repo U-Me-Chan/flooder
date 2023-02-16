@@ -4,3 +4,5 @@ dist
 node_modules
 corpus/bullshit.txt
 yarn-error.log
+storage/model.json
+storage/fetched.json

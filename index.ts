@@ -10,10 +10,26 @@ const main = async () => {
   const corpus = new Corpus();
   const fetcher = new Fetcher(storage, corpus);
   await fetcher.init();
-  fetcher.start().catch(console.error);
 
   app
-    .get('/', (req, res) => res.json(corpus.generate()))
+    .get('/', (req, res) => {
+      res.json(corpus.generate());
+    })
+    .get('/crawler/run', (req, res) => {
+      fetcher.run();
+      res.json('crawlers start working');
+    })
+    .get('/model/save', (req, res) => {
+      corpus.saveModel()
+        .then(() => storage.save())
+        .then(() => res.json('saved'))
+        .catch((err) => res.status(500).json(err));
+    })
+    .get('/model/load', (req, res) => {
+      corpus.loadModel()
+        .then(() => res.json('loaded'))
+        .catch((err) => res.status(500).json(err));
+    })
     .listen(3030, () => console.log('app started'));
 };
 

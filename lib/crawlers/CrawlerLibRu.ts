@@ -4,6 +4,7 @@ import { Storage } from '../Storage';
 export class CrawlerLibRu implements AbstractCrawler {
   storage: Storage;
   name = 'lib.ru';
+  breakTime = 1000;
 
   constructor(storage: Storage) {
     this.storage = storage;

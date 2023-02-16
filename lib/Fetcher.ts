@@ -2,6 +2,7 @@ import { AbstractCrawler } from './crawlers/AbstractCrawler';
 import { AbstractCrawlerFabric } from './crawlers/AbstractCrawlerFabric';
 import { Corpus } from './Corpus';
 import { Storage } from './Storage';
+import { sleep } from './utils/sleep';
 
 export class Fetcher {
   disabledCrawlers: string[] = [];
@@ -17,14 +18,9 @@ export class Fetcher {
     }
   }
 
-  async start() {
-    await this.run();
-    setTimeout(() => this.start(), 5000);
-  }
-
   async run() {
     const enabledCrawlers = this.crawlers.filter(_ => !this.disabledCrawlers.includes(_.name));
-    for (let crawler of enabledCrawlers) {
+    const promises = enabledCrawlers.map(async (crawler) => {
       const { text, nextAvailable, id } = await crawler.getNext();
 
       if (text !== '' && id !== undefined) {
@@ -36,6 +32,11 @@ export class Fetcher {
         console.log(`Crawler "${crawler.name}" reported: next text chunk not available`);
         this.disabledCrawlers.push(crawler.name);
       }
-    }
+
+      await sleep(crawler.breakTime);
+    });
+
+    await Promise.all(promises);
+    setTimeout(() => this.run(), 0);
   }
 }

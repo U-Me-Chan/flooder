@@ -5,9 +5,11 @@ import { createHash } from 'crypto';
 import path from 'path';
 
 export class CrawlerFS implements AbstractCrawler {
-  filePaths: string[] = [];
   storage: Storage;
   name = 'fs';
+  breakTime = 100;
+
+  private filePaths: string[] = [];
 
   constructor(storage: Storage) {
     this.storage = storage;
