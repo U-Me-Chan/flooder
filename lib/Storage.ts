@@ -13,6 +13,8 @@ export class Storage {
   }
 
   async init() {
+    console.log('Storage: Start init');
+
     let rawStorage = '{ "fetchedIds": [] }';
 
     try {
@@ -26,6 +28,8 @@ export class Storage {
   }
 
   public async save() {
+    console.log('Storage: Start save request processing');
+
     if (!this.saved) {
       await writeFile(STORAGE_FILE_PATH, JSON.stringify({ fetchedIds: this.fetchedIds }));
       this.saved = true;

@@ -72,7 +72,7 @@ export class CrawlerLibRu implements AbstractCrawler {
   storage: Storage;
   name = 'lib.ru';
   ready = false;
-  breakTime = 2500;
+  breakTime = 7500;
   authorsUrls: string[] = [];
   booksUrls: string[] = [];
 
@@ -100,8 +100,8 @@ export class CrawlerLibRu implements AbstractCrawler {
               return true;
             });
           this.authorsUrls = [...this.authorsUrls, ...links];
-        } catch {
-          // skip
+        } catch (e) {
+          console.log(`Crawler [${this.name}]: Getting authors links failed: ${e}`);
         } finally {
           await sleep(this.breakTime);
         }
@@ -114,8 +114,8 @@ export class CrawlerLibRu implements AbstractCrawler {
         try {
           const links = await this.getBooksUrlsByAuthor(authorUrl);
           this.booksUrls = [...this.booksUrls, ...links];
-        } catch {
-          // skip
+        } catch (e) {
+          console.log(`Crawler [${this.name}]: Getting books links failed: ${e}`);
         } finally {
           await sleep(this.breakTime);
         }

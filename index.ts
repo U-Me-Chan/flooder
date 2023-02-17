@@ -12,21 +12,33 @@ const main = async () => {
 
   app
     .get('/', (req, res) => {
+      console.log('App: request on /');
+
       res.json(corpus.generate());
     })
     .get('/crawler/run', (req, res) => {
-      fetcher.init();
-      fetcher.run();
+      console.log('App: request on /crawler/run');
 
-      res.json('crawlers start working');
+      if (fetcher.inited) {
+        res.status(500).json('already running');
+      } else {
+        fetcher.init();
+        fetcher.run();
+
+        res.json('crawlers start working');
+      }
     })
     .get('/model/save', (req, res) => {
+      console.log('App: request on /model/save');
+
       corpus.saveModel()
         .then(() => storage.save())
         .then(() => res.json('saved'))
         .catch((err) => res.status(500).json(err));
     })
     .get('/model/load', (req, res) => {
+      console.log('App: request on /model/load');
+
       corpus.loadModel()
         .then(() => res.json('loaded'))
         .catch((err) => res.status(500).json(err));

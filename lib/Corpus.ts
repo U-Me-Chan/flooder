@@ -17,11 +17,15 @@ export class Corpus {
   }
 
   public async saveModel() {
+    console.log('Corpus: Save model to FS');
+
     const model = this.markov.export();
     await writeFile(MODEL_FILEPATH, JSON.stringify(model));
   }
 
   public async loadModel() {
+    console.log('Corpus: Load model from FS');
+
     const model = JSON.parse(
       (await readFile(MODEL_FILEPATH)).toString()
     );
@@ -30,7 +34,7 @@ export class Corpus {
   }
 
   public push(text: string) {
-    console.log('Adding new corpus to model');
+    console.log('Corpus: Adding new text to model');
 
     const cleaned = this.refactor.clean(text);
 
@@ -40,6 +44,8 @@ export class Corpus {
   }
 
   public generate() {
+    console.log('Corpus: New request for text generation');
+
     const generated = this.markov.generate({
       maxTries: MARKOV_STRINGS_MAX_TRIES,
       filter: (result) => {

@@ -7,9 +7,13 @@ import { sleep } from './utils/sleep';
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
 
-axiosRetry(axios, { retries: 5 });
+axiosRetry(axios, { retries: 100 });
+
+const RECHECK_CRAWLER_TIMEOUT = 60 * 1000;
 
 export class Fetcher {
+  inited = false;
+  running = false;
   disabledCrawlers: string[] = [];
   crawlers: AbstractCrawler[] = [];
 
@@ -18,13 +22,21 @@ export class Fetcher {
   }
 
   async init() {
+    if (this.inited) {
+      return;
+    }
+
+    console.log(`Fetcher: start init`);
+
     await Promise.all(this.crawlers.map(async (crawler) => {
       try {
         await crawler.init();
       } catch (e) {
-        console.log(`Crawler [${crawler.name}]: Failed init: ${e}`)
+        console.log(`Fetcher: Crawler [${crawler.name}]: Failed init: ${e}`);
       }
     }));
+
+    this.inited = true;
   }
 
   async run() {
@@ -36,13 +48,18 @@ export class Fetcher {
       const { text, nextAvailable, id } = await crawler.getNext();
 
       if (text !== '' && id !== undefined) {
-        console.log(`Crawler [${crawler.name}]: returned corpus with #${id}`);
+        console.log(`Fetcher: Crawler [${crawler.name}]: returned corpus with #${id}`);
         this.corpus.push(text);
       }
 
       if (!nextAvailable) {
-        console.log(`Crawler [${crawler.name}]: next text chunk not available`);
+        console.log(`Fetcher: Crawler [${crawler.name}]: next text chunk not available`);
         this.disabledCrawlers.push(crawler.name);
+
+        setTimeout(() => {
+          console.log(`Fetcher: Crawler [${crawler.name}]: removed from stoplist for calling .getNext()`);
+          this.disabledCrawlers = this.disabledCrawlers.filter(_ => _ !== crawler.name);
+        }, RECHECK_CRAWLER_TIMEOUT);
       }
 
       await sleep(crawler.breakTime);
