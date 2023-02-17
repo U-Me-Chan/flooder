@@ -93,7 +93,15 @@ export class CrawlerUmechan implements AbstractCrawler {
   }
 
   async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }> {
-    const threadId = this.threadsIds.pop() || 1;
+    const threadId = this.threadsIds.pop();
+
+    if (!threadId) {
+      return {
+        text: '',
+        nextAvailable: this.threadsIds.length > 0,
+      };
+    }
+
     const url = `${BASE_URL}/post/${threadId}`;
     const id = createHash('sha256').update(url).digest('hex');
 
