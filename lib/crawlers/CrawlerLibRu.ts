@@ -74,7 +74,7 @@ export class CrawlerLibRu implements AbstractCrawler {
   storage: Storage;
   name = 'lib.ru';
   ready = false;
-  breakTime = 750;
+  breakTime = 2500;
   authorsUrls: string[] = [];
   booksUrls: string[] = [];
 
