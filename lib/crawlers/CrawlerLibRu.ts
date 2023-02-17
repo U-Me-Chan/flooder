@@ -1,6 +1,6 @@
 import { AbstractCrawler } from './AbstractCrawler';
 import { Storage } from '../Storage';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { LibRuGetBookText, LibRuGetDOM, LibRuGetLinksInDOM } from '../utils/libRuParserHelpers';
 import { sleep } from '../utils/sleep';
 import { createHash } from 'crypto';
@@ -102,6 +102,11 @@ export class CrawlerLibRu implements AbstractCrawler {
           this.authorsUrls = [...this.authorsUrls, ...links];
         } catch (e) {
           console.log(`Crawler [${this.name}]: Getting authors links failed: ${e}`);
+
+          if ((e as AxiosError).status === 503) {
+            console.log(`Crawler [${this.name}]: Gonna sleep for 15 minutes, cause its ban`);
+            await sleep(15 * 60 * 1000);
+          }
         } finally {
           await sleep(this.breakTime);
         }
@@ -116,6 +121,11 @@ export class CrawlerLibRu implements AbstractCrawler {
           this.booksUrls = [...this.booksUrls, ...links];
         } catch (e) {
           console.log(`Crawler [${this.name}]: Getting books links failed: ${e}`);
+
+          if ((e as AxiosError).status === 503) {
+            console.log(`Crawler [${this.name}]: Gonna sleep for 15 minutes, cause its ban`);
+            await sleep(15 * 60 * 1000);
+          }
         } finally {
           await sleep(this.breakTime);
         }
