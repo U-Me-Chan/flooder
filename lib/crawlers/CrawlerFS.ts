@@ -11,7 +11,7 @@ export class CrawlerFS implements AbstractCrawler {
   storage: Storage;
   name = 'fs';
   ready = false;
-  breakTime = 100;
+  breakTime = 1;
 
   private filePaths: string[] = [];
 
@@ -20,6 +20,8 @@ export class CrawlerFS implements AbstractCrawler {
   }
 
   async init(): Promise<void> {
+    console.log(`Crawler [${this.name}]: Reading corpus dirs contents`);
+
     const fileNames = await readdir(CORPUS_PATH);
     const reservFileName = await readdir(RESERV_CORPUS_PATH);
 
@@ -44,6 +46,8 @@ export class CrawlerFS implements AbstractCrawler {
         nextAvailable: false,
       };
     }
+
+    console.log(`Crawler [${this.name}]: Reading corpus #${this.filePaths.length}`);
 
     const filePath = this.filePaths.pop() || '';
     const id = createHash('sha256').update(filePath).digest('hex');

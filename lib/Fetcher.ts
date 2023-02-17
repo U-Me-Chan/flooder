@@ -4,6 +4,11 @@ import { Corpus } from './Corpus';
 import { Storage } from './Storage';
 import { sleep } from './utils/sleep';
 
+import axiosRetry from 'axios-retry';
+import axios from 'axios';
+
+axiosRetry(axios, { retries: 5 });
+
 export class Fetcher {
   disabledCrawlers: string[] = [];
   crawlers: AbstractCrawler[] = [];
@@ -44,6 +49,6 @@ export class Fetcher {
     });
 
     await Promise.all(promises);
-    setTimeout(() => this.run(), 250);
+    setTimeout(() => this.run(), enabledCrawlers.length > 0 ? 0 : 1000);
   }
 }

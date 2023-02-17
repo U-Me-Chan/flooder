@@ -1,13 +1,11 @@
 import { AbstractCrawler } from './AbstractCrawler';
 import { Storage } from '../Storage';
-import axiosRetry from 'axios-retry';
 import axios from 'axios';
 import { LibRuGetBookText, LibRuGetDOM, LibRuGetLinksInDOM } from '../utils/libRuParserHelpers';
 import { sleep } from '../utils/sleep';
 import { createHash } from 'crypto';
 import { readFile, writeFile } from 'fs/promises';
-
-axiosRetry(axios, { retries: 100 });
+import { existsSync } from 'fs';
 
 const RESERV_PATH = 'corpus-reserv/';
 const CACHED_URLS_PATH = 'storage/crawler_lib_ru_urls.json';
@@ -104,8 +102,9 @@ export class CrawlerLibRu implements AbstractCrawler {
           this.authorsUrls = [...this.authorsUrls, ...links];
         } catch {
           // skip
+        } finally {
+          await sleep(this.breakTime);
         }
-        await sleep(2000);
       }
 
       this.authorsUrls = [...new Set(this.authorsUrls)];
@@ -117,8 +116,9 @@ export class CrawlerLibRu implements AbstractCrawler {
           this.booksUrls = [...this.booksUrls, ...links];
         } catch {
           // skip
+        } finally {
+          await sleep(this.breakTime);
         }
-        await sleep(2000);
       }
 
       this.booksUrls = [...new Set(this.booksUrls)];
@@ -133,7 +133,7 @@ export class CrawlerLibRu implements AbstractCrawler {
   }
 
   private async getBooksUrlsByAuthor(authorUrl: string): Promise<string[]> {
-    console.log(`Crawler [${this.name}]: Getting books list for ${authorUrl.replace('http://lib.ru/', '')}`);
+    console.log(`Crawler [${this.name}]: Getting books list for ${authorUrl.replace('http://lib.ru/', '')} [delay ${this.breakTime}ms]`);
 
     const raw = await axios.get<string>(authorUrl, {
       responseType: 'arraybuffer',
@@ -150,7 +150,7 @@ export class CrawlerLibRu implements AbstractCrawler {
   }
 
   private async getAuthorsUrlsByCategory(categoryUrl: string): Promise<string[]> {
-    console.log(`Crawler [${this.name}]: Getting authors list for ${categoryUrl.replace('http://lib.ru/', '')}`);
+    console.log(`Crawler [${this.name}]: Getting authors list for ${categoryUrl.replace('http://lib.ru/', '')} [delay ${this.breakTime}ms]`);
 
     const raw = await axios.get<string>(categoryUrl, {
       responseType: 'arraybuffer',
@@ -176,7 +176,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     const link = this.booksUrls.pop() || '';
     const id = createHash('sha256').update(link).digest('hex');
 
-    if (await this.storage.checkIsFetched(id)) {
+    if (existsSync(`${RESERV_PATH}/${id}.txt`) || await this.storage.checkIsFetched(id)) {
       return {
         text: '',
         id,
