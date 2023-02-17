@@ -176,7 +176,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     const link = this.booksUrls.pop() || '';
     const id = createHash('sha256').update(link).digest('hex');
 
-    if (existsSync(`${RESERV_PATH}/${id}.txt`) || await this.storage.checkIsFetched(id)) {
+    if (existsSync(`${RESERV_PATH}/libru_${id}.txt`) || await this.storage.checkIsFetched(id)) {
       return {
         text: '',
         id,
@@ -195,7 +195,7 @@ export class CrawlerLibRu implements AbstractCrawler {
       const text = LibRuGetBookText(dom);
 
       await this.storage.addFetched(id);
-      await writeFile(`${RESERV_PATH}/${id}.txt`, text);
+      await writeFile(`${RESERV_PATH}/libru_${id}.txt`, text);
 
       return {
         text,
