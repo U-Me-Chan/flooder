@@ -103,7 +103,7 @@ export class CrawlerLibRu implements AbstractCrawler {
         } catch (e) {
           console.log(`Crawler [${this.name}]: Getting authors links failed: ${e}`);
 
-          if ((e as AxiosError).status === 503) {
+          if ((e as AxiosError).message.includes('503')) {
             console.log(`Crawler [${this.name}]: Gonna sleep for 15 minutes, cause its ban`);
             await sleep(15 * 60 * 1000);
           }
@@ -122,7 +122,7 @@ export class CrawlerLibRu implements AbstractCrawler {
         } catch (e) {
           console.log(`Crawler [${this.name}]: Getting books links failed: ${e}`);
 
-          if ((e as AxiosError).status === 503) {
+          if ((e as AxiosError).message.includes('503')) {
             console.log(`Crawler [${this.name}]: Gonna sleep for 15 minutes, cause its ban`);
             await sleep(15 * 60 * 1000);
           }
