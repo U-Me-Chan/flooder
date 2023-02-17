@@ -105,7 +105,7 @@ export class CrawlerLibRu implements AbstractCrawler {
         } catch {
           // skip
         }
-        await sleep(100);
+        await sleep(2000);
       }
 
       this.authorsUrls = [...new Set(this.authorsUrls)];
@@ -118,6 +118,7 @@ export class CrawlerLibRu implements AbstractCrawler {
         } catch {
           // skip
         }
+        await sleep(2000);
       }
 
       this.booksUrls = [...new Set(this.booksUrls)];
