@@ -161,9 +161,10 @@ export class CrawlerLibRu implements AbstractCrawler {
     const booksList = LibRuGetLinksInDOM(dom)
       .map(link => link.includes('.txt') ? link : '')
       .filter(link => link !== '')
+      .filter(link => !link.includes('.txt_Contents'))
       .map((link) => `${authorUrl}/${link}`);
 
-    console.log(`Crawler [${this.name}]: found ${booksList.length} links for ${authorUrl}`);
+    console.log(`Crawler [${this.name}]: found ${booksList.length} links for ${authorUrl.replace('http://lib.ru/', '')}`);
     return booksList;
   }
 
@@ -203,7 +204,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     }
 
     try {
-      console.log(`Crawler [${this.name}]: Getting book ${link} (books in queue: ${this.booksUrls.length})`);
+      console.log(`Crawler [${this.name}]: Getting book ${link.replace('http://lib.ru/', '')} (books in queue: ${this.booksUrls.length})`);
 
       const { data } = await axios.get(link, {
         responseType: 'arraybuffer',
@@ -221,6 +222,13 @@ export class CrawlerLibRu implements AbstractCrawler {
         nextAvailable: this.booksUrls.length > 0,
       };
     } catch (e) {
+      console.log(`Crawler [${this.name}]: Error fetching book ${link.replace('http://lib.ru/', '')}: ${e}`);
+
+      if ((e as AxiosError).message.includes('503')) {
+        console.log(`Crawler [${this.name}]: Gonna sleep for 15 minutes, cause its ban`);
+        await sleep(15 * 60 * 1000);
+      }
+
       return {
         text: '',
         id,
