@@ -55,11 +55,13 @@ export class Fetcher {
       if (!nextAvailable) {
         console.log(`Fetcher: Crawler [${crawler.name}]: next text chunk not available`);
         this.disabledCrawlers.push(crawler.name);
-
-        setTimeout(() => {
-          console.log(`Fetcher: Crawler [${crawler.name}]: removed from stoplist for calling .getNext()`);
-          this.disabledCrawlers = this.disabledCrawlers.filter(_ => _ !== crawler.name);
-        }, RECHECK_CRAWLER_TIMEOUT);
+        
+        if (crawler.isRecallable) {
+          setTimeout(() => {
+            console.log(`Fetcher: Crawler [${crawler.name}]: removed from stoplist for calling .getNext()`);
+            this.disabledCrawlers = this.disabledCrawlers.filter(_ => _ !== crawler.name);
+          }, RECHECK_CRAWLER_TIMEOUT);
+        }
       }
 
       await sleep(crawler.breakTime);

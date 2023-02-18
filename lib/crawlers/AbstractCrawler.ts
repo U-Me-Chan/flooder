@@ -12,6 +12,8 @@ export interface AbstractCrawler {
 
   ready: boolean;
 
+  isRecallable: boolean;
+
   init(): Promise<void>;
 
   getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }>

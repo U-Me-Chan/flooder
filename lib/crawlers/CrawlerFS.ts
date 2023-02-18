@@ -11,6 +11,7 @@ export class CrawlerFS implements AbstractCrawler {
   storage: Storage;
   name = 'fs';
   ready = false;
+  isRecallable = false;
   breakTime = 1;
 
   private filePaths: string[] = [];

@@ -39,6 +39,7 @@ export class CrawlerUmechan implements AbstractCrawler {
   storage: Storage;
   name = 'umechan';
   ready = false;
+  isRecallable = false;
   breakTime = 500;
 
   threadsIds: number[] = [];
