@@ -6,9 +6,7 @@ import { sleep } from '../utils/sleep';
 import { createHash } from 'crypto';
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
-
-const RESERV_PATH = 'corpus-reserv/';
-const CACHED_URLS_PATH = 'storage/crawler_lib_ru_urls.json';
+import { config } from '../config';
 
 // Ссылки из общей навигации и прочее
 const BLACKLIST_URLS = [
@@ -86,7 +84,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     console.log(`Crawler [${this.name}]: Start creating authors list`);
 
     try {
-      const { booksUrls, authorsUrls } = JSON.parse((await readFile(CACHED_URLS_PATH)).toString());
+      const { booksUrls, authorsUrls } = JSON.parse((await readFile(config.crawler.libru.cachedUrlsPath)).toString());
       this.booksUrls = booksUrls;
       this.authorsUrls = authorsUrls;
 
@@ -143,7 +141,7 @@ export class CrawlerLibRu implements AbstractCrawler {
       }
 
       this.booksUrls = [...new Set(this.booksUrls)];
-      await writeFile(CACHED_URLS_PATH, JSON.stringify({ booksUrls: this.booksUrls, authorsUrls: this.authorsUrls }, null, 2));
+      await writeFile(config.crawler.libru.cachedUrlsPath, JSON.stringify({ booksUrls: this.booksUrls, authorsUrls: this.authorsUrls }, null, 2));
     }
 
     console.log(`Crawler [${this.name}]: Authors links found: ${this.authorsUrls.length}`);
@@ -196,7 +194,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     const link = this.booksUrls.pop() || '';
     const id = createHash('sha256').update(link).digest('hex');
 
-    if (existsSync(`${RESERV_PATH}/libru_${id}.txt`) || await this.storage.checkIsFetched(id)) {
+    if (existsSync(`${config.crawler.libru.corpusReservPath}/libru_${id}.txt`) || await this.storage.checkIsFetched(id)) {
       return {
         text: '',
         id,
@@ -215,7 +213,7 @@ export class CrawlerLibRu implements AbstractCrawler {
       const text = LibRuGetBookText(dom);
 
       await this.storage.addFetched(id);
-      await writeFile(`${RESERV_PATH}/libru_${id}.txt`, text);
+      await writeFile(`${config.crawler.libru.corpusReservPath}/libru_${id}.txt`, text);
 
       return {
         text,

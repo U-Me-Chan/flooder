@@ -6,12 +6,7 @@ import { createHash } from 'crypto';
 import { writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
-
-const RESERV_PATH = 'corpus-reserv/';
-const PAGE_SIZE = 50;
-const BASE_URL = 'https://scheoble.xyz/api';
-const GET_ALL_LINK = `${BASE_URL}/v2/board/b+cu+l+m+mod+t+v+vg+fap`;
-const MAX_PAGE_THRESHOLD = 250;
+import { config } from '../config';
 
 type UmechanResponse<T> = {
   payload: T;
@@ -57,11 +52,11 @@ export class CrawlerUmechan implements AbstractCrawler {
     while (nextPageAvailable) {
       try {
         const { data } = await axios.get<GetAllResponse>(
-          GET_ALL_LINK,
+          config.crawler.umechan.getAllLink,
           {
             params: {
-              limit: PAGE_SIZE,
-              offset: page * PAGE_SIZE
+              limit: config.crawler.umechan.pageSize,
+              offset: page * config.crawler.umechan.pageSize
             }
           }
         );
@@ -85,7 +80,7 @@ export class CrawlerUmechan implements AbstractCrawler {
         await sleep(this.breakTime);
       }
 
-      if (page > MAX_PAGE_THRESHOLD) {
+      if (page > config.crawler.umechan.maxPageThreshold) {
         nextPageAvailable = false;
       }
     }
@@ -103,12 +98,12 @@ export class CrawlerUmechan implements AbstractCrawler {
       };
     }
 
-    const url = `${BASE_URL}/post/${threadId}`;
+    const url = `${config.crawler.umechan.baseUrl}/post/${threadId}`;
     const id = createHash('sha256').update(url).digest('hex');
 
     console.log(`Crawler [${this.name}]: getting thread #${threadId}`);
 
-    if (existsSync(path.resolve(RESERV_PATH, `umechan_${id}.txt`)) || await this.storage.checkIsFetched(id)) {
+    if (existsSync(path.resolve(config.crawler.umechan.corpusReservPath, `umechan_${id}.txt`)) || await this.storage.checkIsFetched(id)) {
       return {
         text: '',
         id,
@@ -142,7 +137,7 @@ export class CrawlerUmechan implements AbstractCrawler {
 
       console.log(`Crawler [${this.name}]: for thread #${threadId} found ${data.payload?.thread_data?.replies?.length} posts`);
 
-      await writeFile(path.resolve(RESERV_PATH, `umechan_${id}.txt`), text);
+      await writeFile(path.resolve(config.crawler.umechan.corpusReservPath, `umechan_${id}.txt`), text);
 
       return {
         text,

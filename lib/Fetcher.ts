@@ -6,10 +6,9 @@ import { sleep } from './utils/sleep';
 
 import axiosRetry from 'axios-retry';
 import axios from 'axios';
+import { config } from './config';
 
-axiosRetry(axios, { retries: 100 });
-
-const RECHECK_CRAWLER_TIMEOUT = 60 * 1000;
+axiosRetry(axios, { retries: config.axios.retryCount });
 
 export class Fetcher {
   inited = false;
@@ -60,7 +59,7 @@ export class Fetcher {
           setTimeout(() => {
             console.log(`Fetcher: Crawler [${crawler.name}]: removed from stoplist for calling .getNext()`);
             this.disabledCrawlers = this.disabledCrawlers.filter(_ => _ !== crawler.name);
-          }, RECHECK_CRAWLER_TIMEOUT);
+          }, config.fetcher.recallInterval);
         }
       }
 

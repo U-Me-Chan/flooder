@@ -1,11 +1,7 @@
 import Markov from 'markov-strings';
 import { TextRefactor } from './TextRefactor';
 import { writeFile, readFile } from 'fs/promises';
-
-const MARKOV_STRINGS_STATE_SIZE = 2;
-const MARKOV_STRINGS_MAX_TRIES = 100000;
-const MIN_REFERENCES_COUNT = 5;
-const MODEL_FILEPATH = 'storage/model.json';
+import { config } from './config';
 
 export class Corpus {
   private refactor: TextRefactor;
@@ -13,21 +9,21 @@ export class Corpus {
 
   constructor() {
     this.refactor = new TextRefactor();
-    this.markov = new Markov({ stateSize: MARKOV_STRINGS_STATE_SIZE });
+    this.markov = new Markov({ stateSize: config.corpus.markovStrings.stateSize });
   }
 
   public async saveModel() {
     console.log('Corpus: Save model to FS');
 
     const model = this.markov.export();
-    await writeFile(MODEL_FILEPATH, JSON.stringify(model));
+    await writeFile(config.corpus.modelFilePath, JSON.stringify(model));
   }
 
   public async loadModel() {
     console.log('Corpus: Load model from FS');
 
     const model = JSON.parse(
-      (await readFile(MODEL_FILEPATH)).toString()
+      (await readFile(config.corpus.modelFilePath)).toString()
     );
 
     this.markov.import(model);
@@ -47,9 +43,9 @@ export class Corpus {
     console.log('Corpus: New request for text generation');
 
     const generated = this.markov.generate({
-      maxTries: MARKOV_STRINGS_MAX_TRIES,
+      maxTries: config.corpus.markovStrings.generateMaxTries,
       filter: (result) => {
-        return result.refs.length > MIN_REFERENCES_COUNT;
+        return result.refs.length > config.corpus.markovStrings.generateMinRefCount;
       },
     });
 

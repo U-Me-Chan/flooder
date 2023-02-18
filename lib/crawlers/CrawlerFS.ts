@@ -3,9 +3,7 @@ import { Storage } from '../Storage';
 import { readFile, readdir} from 'fs/promises';
 import { createHash } from 'crypto';
 import path from 'path';
-
-const CORPUS_PATH = 'corpus/';
-const RESERV_CORPUS_PATH = 'corpus-reserv/';
+import { config } from '../config';
 
 export class CrawlerFS implements AbstractCrawler {
   storage: Storage;
@@ -23,16 +21,16 @@ export class CrawlerFS implements AbstractCrawler {
   async init(): Promise<void> {
     console.log(`Crawler [${this.name}]: Reading corpus dirs contents`);
 
-    const fileNames = await readdir(CORPUS_PATH);
-    const reservFileName = await readdir(RESERV_CORPUS_PATH);
+    const fileNames = await readdir(config.crawler.fs.corpusPath);
+    const reservFileName = await readdir(config.crawler.fs.corpusReservPath);
 
     for (const fileName of fileNames) {
-      const filePath = path.join(CORPUS_PATH, fileName);
+      const filePath = path.join(config.crawler.fs.corpusPath, fileName);
       this.filePaths.push(filePath);
     }
 
     for (const fileName of reservFileName) {
-      const filePath = path.join(RESERV_CORPUS_PATH, fileName);
+      const filePath = path.join(config.crawler.fs.corpusReservPath, fileName);
       this.filePaths.push(filePath);
     }
 

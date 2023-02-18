@@ -1,6 +1,5 @@
 import { readFile, writeFile } from 'fs/promises'
-
-const STORAGE_FILE_PATH = 'storage/fetched.json';
+import { config } from './config';
 
 export class Storage {
   private saved = false;
@@ -18,9 +17,9 @@ export class Storage {
     let rawStorage = '{ "fetchedIds": [] }';
 
     try {
-      rawStorage = (await readFile(STORAGE_FILE_PATH)).toString();
+      rawStorage = (await readFile(config.storage.fetchedPath)).toString();
     } catch (e) {
-      await writeFile(STORAGE_FILE_PATH, rawStorage);
+      await writeFile(config.storage.fetchedPath, rawStorage);
     }
 
     const { fetchedIds } = JSON.parse(rawStorage) as { fetchedIds: string[] };
@@ -31,7 +30,7 @@ export class Storage {
     console.log('Storage: Start save request processing');
 
     if (!this.saved) {
-      await writeFile(STORAGE_FILE_PATH, JSON.stringify({ fetchedIds: this.fetchedIds }));
+      await writeFile(config.storage.fetchedPath, JSON.stringify({ fetchedIds: this.fetchedIds }));
       this.saved = true;
     }
   }
