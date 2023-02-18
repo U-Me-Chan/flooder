@@ -11,8 +11,7 @@ import { config } from './config';
 axiosRetry(axios, { retries: config.axios.retryCount });
 
 export class Fetcher {
-  inited = false;
-  running = false;
+  isInitialized = false;
   disabledCrawlers: string[] = [];
   crawlers: AbstractCrawler[] = [];
 
@@ -21,7 +20,7 @@ export class Fetcher {
   }
 
   async init() {
-    if (this.inited) {
+    if (this.isInitialized) {
       return;
     }
 
@@ -35,18 +34,18 @@ export class Fetcher {
       }
     }));
 
-    this.inited = true;
+    this.isInitialized = true;
   }
 
   async run() {
     const enabledCrawlers = this.crawlers
       .filter(_ => !this.disabledCrawlers.includes(_.name))
-      .filter(_ => _.ready);
+      .filter(_ => _.isReady);
 
     const promises = enabledCrawlers.map(async (crawler) => {
       const { text, nextAvailable, id } = await crawler.getNext();
 
-      if (text !== '' && id !== undefined) {
+      if (text !== '' && id !== undefined && config.fetcher.loadFetchedIntoCorpus) {
         console.log(`Fetcher: Crawler [${crawler.name}]: returned corpus with #${id}`);
         this.corpus.push(text);
       }
@@ -54,8 +53,8 @@ export class Fetcher {
       if (!nextAvailable) {
         console.log(`Fetcher: Crawler [${crawler.name}]: next text chunk not available`);
         this.disabledCrawlers.push(crawler.name);
-        
-        if (crawler.isRecallable) {
+
+        if (crawler.isReCallable) {
           setTimeout(() => {
             console.log(`Fetcher: Crawler [${crawler.name}]: removed from stoplist for calling .getNext()`);
             this.disabledCrawlers = this.disabledCrawlers.filter(_ => _ !== crawler.name);

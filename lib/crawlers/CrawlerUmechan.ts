@@ -33,8 +33,8 @@ type ThreadResponse = UmechanResponse<{
 export class CrawlerUmechan implements AbstractCrawler {
   storage: Storage;
   name = 'umechan';
-  ready = false;
-  isRecallable = false;
+  isReady = false;
+  isReCallable = false;
   breakTime = 500;
 
   threadsIds: number[] = [];
@@ -85,7 +85,7 @@ export class CrawlerUmechan implements AbstractCrawler {
       }
     }
 
-    this.ready = true;
+    this.isReady = true;
   }
 
   async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }> {

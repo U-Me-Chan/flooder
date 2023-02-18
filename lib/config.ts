@@ -34,8 +34,9 @@ export const config = {
 
   fetcher: {
     recallInterval: 60 * 1000,
+    loadFetchedIntoCorpus: true,
   },
-  
+
   corpus: {
     markovStrings: {
       stateSize: 2,

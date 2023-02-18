@@ -69,8 +69,8 @@ const CATEGORY_URLS = [
 export class CrawlerLibRu implements AbstractCrawler {
   storage: Storage;
   name = 'lib.ru';
-  ready = false;
-  isRecallable = false;
+  isReady = false;
+  isReCallable = false;
   breakTime = 7500;
   authorsUrls: string[] = [];
   booksUrls: string[] = [];
@@ -147,7 +147,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     console.log(`Crawler [${this.name}]: Authors links found: ${this.authorsUrls.length}`);
     console.log(`Crawler [${this.name}]: Books links found: ${this.booksUrls.length}`);
 
-    this.ready = true;
+    this.isReady = true;
   }
 
   private async getBooksUrlsByAuthor(authorUrl: string): Promise<string[]> {
@@ -194,6 +194,7 @@ export class CrawlerLibRu implements AbstractCrawler {
   async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }> {
     const link = this.booksUrls.pop() || '';
     const id = createHash('sha256').update(link).digest('hex');
+    const startTime = Date.now();
 
     if (existsSync(`${config.crawler.libru.corpusReservPath}/libru_${id}.txt`) || await this.storage.checkIsFetched(id)) {
       return {
@@ -215,6 +216,8 @@ export class CrawlerLibRu implements AbstractCrawler {
 
       await this.storage.addFetched(id);
       await writeFile(`${config.crawler.libru.corpusReservPath}/libru_${id}.txt`, text);
+
+      console.log(`Crawler [${this.name}]: Fetched for ${Date.now() - startTime}ms`)
 
       return {
         text,

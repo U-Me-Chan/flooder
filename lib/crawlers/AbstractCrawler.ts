@@ -10,9 +10,9 @@ export interface AbstractCrawler {
 
   name: string;
 
-  ready: boolean;
+  isReady: boolean;
 
-  isRecallable: boolean;
+  isReCallable: boolean;
 
   init(): Promise<void>;
 

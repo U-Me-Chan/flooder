@@ -8,8 +8,8 @@ import { config } from '../config';
 export class CrawlerFS implements AbstractCrawler {
   storage: Storage;
   name = 'fs';
-  ready = false;
-  isRecallable = false;
+  isReady = false;
+  isReCallable = false;
   breakTime = 1;
 
   private filePaths: string[] = [];
@@ -34,7 +34,7 @@ export class CrawlerFS implements AbstractCrawler {
       this.filePaths.push(filePath);
     }
 
-    this.ready = true;
+    this.isReady = true;
   }
 
   async getNext(): Promise<{ text: string; id?: string, nextAvailable: boolean }> {

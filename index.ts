@@ -19,7 +19,7 @@ const main = async () => {
     .get('/crawler/run', (req, res) => {
       console.log('App: request on /crawler/run');
 
-      if (fetcher.inited) {
+      if (fetcher.isInitialized) {
         res.status(500).json('already running');
       } else {
         fetcher.init();

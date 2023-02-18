@@ -20,8 +20,8 @@ const CATEGORIES_ARTICLES_PRESENTER = [
 export class CrawlerPanorama implements AbstractCrawler {
   breakTime = 5000;
   name = 'panorama';
-  ready = false;
-  isRecallable = false;
+  isReady = false;
+  isReCallable = false;
   storage: Storage;
 
   constructor (storage: Storage) {
