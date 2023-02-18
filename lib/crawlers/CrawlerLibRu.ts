@@ -98,7 +98,7 @@ export class CrawlerLibRu implements AbstractCrawler {
         try {
           const links = (await this.getAuthorsUrlsByCategory(catUrl))
             .filter(link => {
-              if (link.includes('.txt') && !link.includes('.txt_Contents')) {
+              if (link.includes('.txt') && !link.includes('.txt_Content')) {
                 this.booksUrls.push(link);
                 return false;
               }
