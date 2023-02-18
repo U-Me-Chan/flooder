@@ -1,9 +1,9 @@
 export const config = {
   crawlersMap: {
     'lib.ru': true,
-    'fs': false,
-    'panorama': false,
-    'umechan': false,
+    'fs': true,
+    'panorama': true,
+    'umechan': true,
   } as Record<string, boolean>,
 
   crawler: {
