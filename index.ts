@@ -43,6 +43,9 @@ const main = async () => {
         .then(() => res.json('loaded'))
         .catch((err) => res.status(500).json(err));
     })
+    .get('/state', (req, res) => {
+      res.send(JSON.stringify(corpus.markov.corpus, null, 2));
+    })
     .listen(3030, () => console.log('App: started'));
 };
 

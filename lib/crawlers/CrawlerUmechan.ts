@@ -10,7 +10,7 @@ import path from 'path';
 const RESERV_PATH = 'corpus-reserv/';
 const PAGE_SIZE = 50;
 const BASE_URL = 'https://scheoble.xyz/api';
-const GET_ALL_LINK = `${BASE_URL}/v2/board/b+cu+l+m+mod+t+test+v+vg+fap`;
+const GET_ALL_LINK = `${BASE_URL}/v2/board/b+cu+l+m+mod+t+v+vg+fap`;
 const MAX_PAGE_THRESHOLD = 250;
 
 type UmechanResponse<T> = {

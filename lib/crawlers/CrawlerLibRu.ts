@@ -81,13 +81,20 @@ export class CrawlerLibRu implements AbstractCrawler {
   }
 
   async init(): Promise<void> {
+    let fileReaden = false;
     console.log(`Crawler [${this.name}]: Start creating authors list`);
 
     try {
       const { booksUrls, authorsUrls } = JSON.parse((await readFile(CACHED_URLS_PATH)).toString());
       this.booksUrls = booksUrls;
       this.authorsUrls = authorsUrls;
+
+      fileReaden = true;
     } catch {
+      console.log(`Crawler [${this.name}]: Cache file read failed, starting online fetch`);
+    }
+
+    if (!fileReaden) {
       for (let catUrl of CATEGORY_URLS) {
         try {
           const links = (await this.getAuthorsUrlsByCategory(catUrl))
@@ -113,6 +120,9 @@ export class CrawlerLibRu implements AbstractCrawler {
       }
 
       this.authorsUrls = [...new Set(this.authorsUrls)];
+    }
+
+    if (!fileReaden || this.booksUrls.length === 0) {
       for (const authorUrl of this.authorsUrls) {
         console.log(`Crawler [${this.name}]: Processing link ${this.authorsUrls.findIndex((_) => _ === authorUrl) + 1} of ${this.authorsUrls.length}`);
 
@@ -132,8 +142,7 @@ export class CrawlerLibRu implements AbstractCrawler {
       }
 
       this.booksUrls = [...new Set(this.booksUrls)];
-
-      await writeFile(CACHED_URLS_PATH, JSON.stringify({ booksUrls: this.booksUrls, authorsUrls: this.authorsUrls }));
+      await writeFile(CACHED_URLS_PATH, JSON.stringify({ booksUrls: this.booksUrls, authorsUrls: this.authorsUrls }, null, 2));
     }
 
     console.log(`Crawler [${this.name}]: Authors links found: ${this.authorsUrls.length}`);
@@ -153,7 +162,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     const booksList = LibRuGetLinksInDOM(dom)
       .map(link => link.includes('.txt') ? link : '')
       .filter(link => link !== '')
-      .map((link) => `${authorUrl}${link}`);
+      .map((link) => `${authorUrl}/${link}`);
 
     console.log(`Crawler [${this.name}]: found ${booksList.length} links for ${authorUrl}`);
     return booksList;

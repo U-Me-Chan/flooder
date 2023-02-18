@@ -22,5 +22,5 @@ export const LibRuGetLinksInDOM = (dom: Document) => {
 
 export const LibRuGetBookText = (dom: Document) => {
   const body = getElementsByTagName('body', dom);
-  return textContent(body);
+  return textContent(body).split('\n').join(' ');
 }

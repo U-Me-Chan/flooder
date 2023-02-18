@@ -9,7 +9,7 @@ const MODEL_FILEPATH = 'storage/model.json';
 
 export class Corpus {
   private refactor: TextRefactor;
-  private markov: Markov;
+  markov: Markov;
 
   constructor() {
     this.refactor = new TextRefactor();
