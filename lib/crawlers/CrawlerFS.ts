@@ -21,17 +21,12 @@ export class CrawlerFS implements AbstractCrawler {
   async init(): Promise<void> {
     console.log(`Crawler [${this.name}]: Reading corpus dirs contents`);
 
-    const fileNames = await readdir(config.crawler.fs.corpusPath);
-    const reservFileName = await readdir(config.crawler.fs.corpusReservPath);
-
-    for (const fileName of fileNames) {
-      const filePath = path.join(config.crawler.fs.corpusPath, fileName);
-      this.filePaths.push(filePath);
-    }
-
-    for (const fileName of reservFileName) {
-      const filePath = path.join(config.crawler.fs.corpusReservPath, fileName);
-      this.filePaths.push(filePath);
+    for (const dirPath of config.crawler.fs.dirs) {
+      const contents = await readdir(dirPath);
+      contents.forEach((fileName) => {
+        const filePath = path.join(dirPath, fileName);
+        this.filePaths.push(filePath);
+      });
     }
 
     this.isReady = true;

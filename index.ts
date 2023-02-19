@@ -2,6 +2,7 @@ import express from 'express';
 import { Corpus } from './lib/Corpus';
 import { Storage } from './lib/Storage';
 import { Fetcher } from './lib/Fetcher';
+import { config } from './lib/config';
 
 const main = async () => {
   const app = express();
@@ -46,7 +47,7 @@ const main = async () => {
     .get('/state', (req, res) => {
       res.send(JSON.stringify(corpus.markov.corpus, null, 2));
     })
-    .listen(3030, () => console.log('App: started'));
+    .listen(config.app.listenPort, () => console.log('App: started'));
 };
 
 main().catch(() => null);

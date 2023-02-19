@@ -6,10 +6,16 @@ export const config = {
     'umechan': true,
   } as Record<string, boolean>,
 
+  app: {
+    listenPort: 3030,
+  },
+
   crawler: {
     fs: {
-      corpusPath: 'corpus/',
-      corpusReservPath: 'corpus-reserv/',
+      dirs: [
+        'corpus/',
+        'corpus-reserv/',
+      ],
     },
     libru: {
       corpusReservPath: 'corpus-reserv/',
