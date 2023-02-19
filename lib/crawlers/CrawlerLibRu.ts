@@ -75,6 +75,11 @@ export class CrawlerLibRu implements AbstractCrawler {
   authorsUrls: string[] = [];
   booksUrls: string[] = [];
 
+  counter = {
+    fetched: 0,
+    time: 0,
+  };
+
   constructor(storage: Storage) {
     this.storage = storage;
   }
@@ -217,7 +222,15 @@ export class CrawlerLibRu implements AbstractCrawler {
       await this.storage.addFetched(id);
       await writeFile(`${config.crawler.libru.corpusReservPath}/libru_${id}.txt`, text);
 
-      console.log(`Crawler [${this.name}]: Fetched for ${Date.now() - startTime}ms`)
+      const time = Date.now() - startTime;
+      this.counter.fetched += 1;
+      this.counter.time += time + this.breakTime;
+
+      const average = this.counter.time / this.counter.fetched;
+      const speed = Math.round(((60 * 60 * 1000) / average) * 1000) / 1000;
+      const speedDay = Math.round(((24 * 60 * 60 * 1000) / average) * 1000) / 1000;
+
+      console.log(`Crawler [${this.name}]: Fetched for ${time}ms, avg: ${average}ms, spd: ${speed} per hour (or ${speedDay} per day)`)
 
       return {
         text,
