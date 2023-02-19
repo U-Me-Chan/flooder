@@ -1,6 +1,9 @@
 ## U-Me-Chan :: flooder
 Шутка, чтобы обхитрить Хому
 
+## Внутреннее устройство программы
+![Диаграмма](https://github.com/U-Me-Chan/flooder/blob/main/scheme.excalidraw.png?raw=true)
+
 ## Установка
 ```shell
 git clone https://github.com/U-Me-Chan/flooder.git && \
