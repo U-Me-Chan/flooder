@@ -74,8 +74,11 @@ export class PagePresentedParser {
       await sleep(SLEEP_TIME);
     }
 
-    this.targetDay = addDays(this.targetDay, -1);
     return items;
+  }
+
+  iterate() {
+    this.targetDay = addDays(this.targetDay, -1);
   }
 }
 
@@ -100,11 +103,14 @@ export class CrawlerPanorama implements AbstractCrawler {
   }
 
   async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string; shouldSkipDelay?: boolean }> {
+    this.parsers.datePresenter.iterate();
     const dateFormatted = format(this.parsers.datePresenter.targetDay, DATE_FORMAT);
     const id = createHash('sha256').update(dateFormatted).digest('hex');
     const filePath = path.resolve(config.crawler.panorama.corpusReservPath, `panorama_${id}.txt`);
 
-    if (existsSync(filePath) || (await this.storage.checkIsFetched(id))) {
+    if (existsSync(filePath)) {
+      console.log(`Crawler [${this.name}]: Content exists for "${dateFormatted}"`);
+
       return {
         text: '',
         nextAvailable: true,
@@ -113,17 +119,22 @@ export class CrawlerPanorama implements AbstractCrawler {
     }
 
     let text = '';
-    for (const catUrl of CATEGORIES_DATE_PRESENTER) {
-      const data = await this.parsers.datePresenter.fetchData(catUrl);
-      const chunk = data.map(_ => [_.title, _.text, _.comments.join('\n')].join('\n')).join('\n');
 
-      text = [text, chunk].join('\n');
-      await sleep(this.breakTime);
+    try {
+      for (const catUrl of CATEGORIES_DATE_PRESENTER) {
+        const data = await this.parsers.datePresenter.fetchData(catUrl);
+        const chunk = data.map(_ => [_.title, _.text, _.comments.join('\n')].join('\n')).join('\n');
+
+        text = [text, chunk].join('\n');
+        await sleep(this.breakTime);
+      }
+
+      console.log(`Crawler [${this.name}]: Write file "${filePath}"`);
+      await writeFile(filePath, text);
+      await this.storage.addFetched(id);
+    } catch (e) {
+      console.log(`Crawler [${this.name}]: error: ${e}`);
     }
-
-    console.log(`Crawler [${this.name}]: Write file "${filePath}"`);
-    await writeFile(filePath, text);
-    await this.storage.addFetched(id);
 
     return {
       text,

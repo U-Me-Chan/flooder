@@ -12,6 +12,8 @@ axiosRetry(axios, { retries: config.axios.retryCount });
 
 export class Fetcher {
   isInitialized = false;
+  intervalRunning: Record<string, boolean> = {};
+  intervals: Record<string, NodeJS.Timer> = {};
   disabledCrawlers: string[] = [];
   crawlers: AbstractCrawler[] = [];
 
@@ -42,32 +44,51 @@ export class Fetcher {
       .filter(_ => !this.disabledCrawlers.includes(_.name))
       .filter(_ => _.isReady);
 
-    const promises = enabledCrawlers.map(async (crawler) => {
-      const { text, nextAvailable, id, shouldSkipDelay = false } = await crawler.getNext();
+    enabledCrawlers.forEach((crawler) => {
+      const intervalExists = this.intervals[crawler.name] !== undefined;
 
-      if (text !== '' && id !== undefined && config.fetcher.loadFetchedIntoCorpus) {
-        console.log(`Fetcher: Crawler [${crawler.name}]: returned corpus with #${id}`);
-        this.corpus.push(text);
+      if (intervalExists) {
+        return;
       }
 
-      if (!nextAvailable) {
-        console.log(`Fetcher: Crawler [${crawler.name}]: next text chunk not available`);
-        this.disabledCrawlers.push(crawler.name);
+      const runner = async () => {
+        this.intervalRunning[crawler.name] = true;
+        const { text, nextAvailable, id, shouldSkipDelay = false } = await crawler.getNext();
 
-        if (crawler.isReCallable) {
-          setTimeout(() => {
-            console.log(`Fetcher: Crawler [${crawler.name}]: removed from stoplist for calling .getNext()`);
-            this.disabledCrawlers = this.disabledCrawlers.filter(_ => _ !== crawler.name);
-          }, config.fetcher.recallInterval);
+        if (text !== '' && id !== undefined && config.fetcher.loadFetchedIntoCorpus) {
+          console.log(`Fetcher: Crawler [${crawler.name}]: returned corpus with #${id}`);
+          this.corpus.push(text);
         }
+
+        if (!nextAvailable) {
+          console.log(`Fetcher: Crawler [${crawler.name}]: next text chunk not available`);
+          this.disabledCrawlers.push(crawler.name);
+
+          clearInterval(this.intervals[crawler.name]);
+          this.intervals[crawler.name] = undefined as unknown as NodeJS.Timer;
+
+          if (crawler.isReCallable) {
+            setTimeout(() => {
+              console.log(`Fetcher: Crawler [${crawler.name}]: removed from stoplist for calling .getNext()`);
+              this.disabledCrawlers = this.disabledCrawlers.filter(_ => _ !== crawler.name);
+            }, config.fetcher.recallInterval);
+          }
+        }
+
+        if (!shouldSkipDelay) {
+          await sleep(crawler.breakTime);
+        }
+
+        this.intervalRunning[crawler.name] = false;
       }
 
-      if (!shouldSkipDelay) {
-        await sleep(crawler.breakTime);
-      }
+      this.intervals[crawler.name] = setInterval(async () => {
+        if (!this.intervalRunning[crawler.name]) {
+          runner();
+        }
+      }, 25);
     });
 
-    await Promise.all(promises);
-    setTimeout(() => this.run(), enabledCrawlers.length > 0 ? 0 : 1000);
+    setTimeout(() => this.run(), 1000);
   }
 }
