@@ -107,7 +107,7 @@ export class CrawlerPanorama implements AbstractCrawler {
     if (existsSync(filePath) || (await this.storage.checkIsFetched(id))) {
       return {
         text: '',
-        nextAvailable: false,
+        nextAvailable: true,
         shouldSkipDelay: true,
       };
     }
