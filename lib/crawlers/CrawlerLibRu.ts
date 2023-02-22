@@ -217,6 +217,12 @@ export class CrawlerLibRu implements AbstractCrawler {
       const content = (await readFile(filePathOld)).toString();
       await writeFile(filePath, content);
       await rm(filePathOld);
+
+      return {
+        text: '',
+        id,
+        nextAvailable: this.booksUrls.length > 0,
+      };
     }
 
     try {
