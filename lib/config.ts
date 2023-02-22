@@ -1,6 +1,6 @@
 export const config = {
   crawlersMap: {
-    'lib.ru': true,
+    'lib.ru': false,
     'fs': true,
     'panorama': true,
     'umechan': true,
@@ -27,7 +27,10 @@ export const config = {
       maxPageThreshold: 250,
       baseUrl: 'https://scheoble.xyz/api',
       getAllLink: `https://scheoble.xyz/api/v2/board/b+cu+l+m+mod+t+v+vg+fap`,
-    }
+    },
+    panorama: {
+      corpusReservPath: 'corpus-reserv/',
+    },
   },
 
   axios: {
