@@ -88,7 +88,7 @@ export class CrawlerUmechan implements AbstractCrawler {
     this.isReady = true;
   }
 
-  async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }> {
+  async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string; shouldSkipDelay?: boolean }> {
     const threadId = this.threadsIds.pop();
 
     if (!threadId) {
@@ -108,6 +108,7 @@ export class CrawlerUmechan implements AbstractCrawler {
         text: '',
         id,
         nextAvailable: this.threadsIds.length > 0,
+        shouldSkipDelay: true,
       }
     }
 

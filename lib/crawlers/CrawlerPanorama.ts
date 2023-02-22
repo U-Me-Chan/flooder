@@ -99,7 +99,7 @@ export class CrawlerPanorama implements AbstractCrawler {
     this.isReady = true;
   }
 
-  async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }> {
+  async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string; shouldSkipDelay?: boolean }> {
     const dateFormatted = format(this.parsers.datePresenter.targetDay, DATE_FORMAT);
     const id = createHash('sha256').update(dateFormatted).digest('hex');
     const filePath = path.resolve(config.crawler.panorama.corpusReservPath, `panorama_${id}.txt`);
@@ -108,6 +108,7 @@ export class CrawlerPanorama implements AbstractCrawler {
       return {
         text: '',
         nextAvailable: false,
+        shouldSkipDelay: true,
       };
     }
 
