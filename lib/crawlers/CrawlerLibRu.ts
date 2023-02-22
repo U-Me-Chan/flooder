@@ -4,7 +4,7 @@ import axios, { AxiosError } from 'axios';
 import { LibRuGetBookText, LibRuGetDOM, LibRuGetLinksInDOM } from '../utils/libRuParserHelpers';
 import { sleep } from '../utils/sleep';
 import { createHash } from 'crypto';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import { config } from '../config';
 
@@ -200,13 +200,23 @@ export class CrawlerLibRu implements AbstractCrawler {
     const link = this.booksUrls.pop() || '';
     const id = createHash('sha256').update(link).digest('hex');
     const startTime = Date.now();
+    const linkFsEd = link.replace('http://lib.ru/', '').split('/').join('_').split('../').join('');
+    const filePath = `${config.crawler.libru.corpusReservPath}/libru_${linkFsEd}_${id}.txt`;
+    const filePathOld = `${config.crawler.libru.corpusReservPath}/libru_${id}.txt`;
 
-    if (existsSync(`${config.crawler.libru.corpusReservPath}/libru_${id}.txt`) || await this.storage.checkIsFetched(id)) {
+    if (existsSync(filePath) || await this.storage.checkIsFetched(id)) {
       return {
         text: '',
         id,
         nextAvailable: this.booksUrls.length > 0,
       };
+    }
+
+    if (existsSync(filePathOld)) {
+      console.log(`Crawler [${this.name}]: Found book in old-style path, moving in new-style (books in queue: ${this.booksUrls.length})`);
+      const content = (await readFile(filePathOld)).toString();
+      await writeFile(filePath, content);
+      await rm(filePathOld);
     }
 
     try {
@@ -220,7 +230,7 @@ export class CrawlerLibRu implements AbstractCrawler {
       const text = LibRuGetBookText(dom);
 
       await this.storage.addFetched(id);
-      await writeFile(`${config.crawler.libru.corpusReservPath}/libru_${id}.txt`, text);
+      await writeFile(filePath, text);
 
       const time = Date.now() - startTime;
       this.counter.fetched += 1;

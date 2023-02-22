@@ -1,6 +1,6 @@
 export const config = {
   crawlersMap: {
-    'lib.ru': false,
+    'lib.ru': true,
     'fs': true,
     'panorama': true,
     'umechan': true,
