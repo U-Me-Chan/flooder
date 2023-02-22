@@ -196,7 +196,7 @@ export class CrawlerLibRu implements AbstractCrawler {
     return authorsLinks;
   }
 
-  async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }> {
+  async getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string; shouldSkipDelay?: boolean }> {
     const link = this.booksUrls.pop() || '';
     const id = createHash('sha256').update(link).digest('hex');
     const startTime = Date.now();
@@ -209,6 +209,7 @@ export class CrawlerLibRu implements AbstractCrawler {
         text: '',
         id,
         nextAvailable: this.booksUrls.length > 0,
+        shouldSkipDelay: true,
       };
     }
 

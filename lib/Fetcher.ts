@@ -43,7 +43,7 @@ export class Fetcher {
       .filter(_ => _.isReady);
 
     const promises = enabledCrawlers.map(async (crawler) => {
-      const { text, nextAvailable, id } = await crawler.getNext();
+      const { text, nextAvailable, id, shouldSkipDelay = false } = await crawler.getNext();
 
       if (text !== '' && id !== undefined && config.fetcher.loadFetchedIntoCorpus) {
         console.log(`Fetcher: Crawler [${crawler.name}]: returned corpus with #${id}`);
@@ -62,7 +62,9 @@ export class Fetcher {
         }
       }
 
-      await sleep(crawler.breakTime);
+      if (!shouldSkipDelay) {
+        await sleep(crawler.breakTime);
+      }
     });
 
     await Promise.all(promises);

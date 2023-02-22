@@ -16,5 +16,5 @@ export interface AbstractCrawler {
 
   init(): Promise<void>;
 
-  getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string }>
+  getNext(): Promise<{ text: string; nextAvailable: boolean; id?: string; shouldSkipDelay?: boolean }>
 }
