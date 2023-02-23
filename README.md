@@ -8,7 +8,9 @@
 ```shell
 git clone https://github.com/U-Me-Chan/flooder.git && \
 cd flooder && \
-yarn install --frozen-lockfile
+yarn install --frozen-lockfile && \
+yarn db:clientgen && \
+yarn db:migrate
 ```
 
 ## Запуск
@@ -29,10 +31,4 @@ yarn start
   
 - Запускает процесс кравлинга:
   GET /crawler/run
-  
-- Сохраняет модель и прогресс кравлеров:
-  GET /model/save
-
-- Загружает модель:
-  GET /model/load
 ```

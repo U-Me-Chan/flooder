@@ -57,7 +57,7 @@ export class Fetcher {
 
         if (text !== '' && id !== undefined && config.fetcher.loadFetchedIntoCorpus) {
           console.log(`Fetcher: Crawler [${crawler.name}]: returned corpus with #${id}`);
-          this.corpus.push(text);
+          await this.corpus.push(text);
         }
 
         if (!nextAvailable) {

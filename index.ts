@@ -15,7 +15,7 @@ const main = async () => {
     .get('/', (req, res) => {
       console.log('App: request on /');
 
-      res.json(corpus.generate());
+      corpus.generate().then((response) => res.json(response));
     })
     .get('/crawler/run', (req, res) => {
       console.log('App: request on /crawler/run');
@@ -28,24 +28,6 @@ const main = async () => {
 
         res.json('crawlers start working');
       }
-    })
-    .get('/model/save', (req, res) => {
-      console.log('App: request on /model/save');
-
-      corpus.saveModel()
-        .then(() => storage.save())
-        .then(() => res.json('saved'))
-        .catch((err) => res.status(500).json(err));
-    })
-    .get('/model/load', (req, res) => {
-      console.log('App: request on /model/load');
-
-      corpus.loadModel()
-        .then(() => res.json('loaded'))
-        .catch((err) => res.status(500).json(err));
-    })
-    .get('/state', (req, res) => {
-      res.send(JSON.stringify(corpus.markov.corpus, null, 2));
     })
     .listen(config.app.listenPort, () => console.log('App: started'));
 };
