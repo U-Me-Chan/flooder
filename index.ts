@@ -17,6 +17,11 @@ const main = async () => {
 
       corpus.generate().then((response) => res.json(response));
     })
+    .get('/tree', (req, res) => {
+      console.log('App: request on /tree');
+
+      corpus.markov.genTree('__START__', 1, 10, 2).then((response) => res.json(corpus.markov.flattenTree(response || [])));
+    })
     .get('/crawler/run', (req, res) => {
       console.log('App: request on /crawler/run');
 

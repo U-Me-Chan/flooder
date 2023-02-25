@@ -5,6 +5,13 @@ const getRandom = (max: number) => {
   return rand === max ? rand - 1 : rand;
 }
 
+type ListNode = {
+  id: number;
+  value: string;
+  parent: string;
+  next?: ListNode[];
+};
+
 export class Core {
   prisma = new PrismaClient();
 
@@ -34,6 +41,53 @@ export class Core {
     }
 
     console.log(`Core: Pushed ${pairs.length} pairs, ${Date.now() - time}ms`);
+  }
+
+  async genTree(parent: string = '__START__', step: number = 1, words: number = 10, treeSize: number = 2, traceId: string = 'S.I'): Promise<ListNode[] | undefined> {
+    console.log(`Core: tree-gen, traceId: ${traceId}`);
+    const result: ListNode[] = [];
+
+    if (step === words) {
+      return undefined;
+    }
+
+    if (parent === '__END__') {
+      return undefined;
+    }
+
+    const nextWords = await this.prisma.word.findMany({ where: { parent } });
+
+    for (let i = 0; i < (step === 1 ? 1 : treeSize); i++) {
+      const nextWord = nextWords[getRandom(nextWords.length)];
+      result.push({
+        id: nextWord.id,
+        parent,
+        value: nextWord.content,
+        next: await this.genTree(nextWord.content, step + 1, words, treeSize, `${traceId}-${i}.${step}`),
+      });
+    }
+
+    return result;
+  }
+
+  flattenTree(tree: ListNode[]): string[] {
+    const result: string[] = [];
+
+    tree.forEach((node) => {
+      let siblings: string[] = [];
+
+      if (node.next?.length) {
+        siblings = this.flattenTree(node.next);
+      }
+
+      if (!siblings.length) {
+        result.push(node.value === '__END__' ? '' : node.value);
+      } else {
+        siblings.forEach(_ => result.push(`${node.value} ${_}`));
+      }
+    })
+
+    return result;
   }
 
   async gen(words: number = 10) {
